@@ -1,9 +1,10 @@
 import Table from './components/table';
+import tableData from './table-data.json';
 
 function App() {
 	return (
 		<div>
-			<Table />
+			<Table tableData={tableData} />
 		</div>
 	);
 }

@@ -1,85 +1,152 @@
 import React, { useState } from 'react';
-import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
-import { TableData } from '../../types';
-import MultiSelectDropdown, { Option } from '../dropdown';
-import tableDataJson from '../../table-data.json';
-import { transformTableData } from '../../utils';
-import './styles.css';
+import { FixedSizeList as List } from 'react-window';
+import styled from 'styled-components';
 
-const Table: React.FC = () => {
-	const [tableData, setTableData] = useState<TableData>(() =>
-		transformTableData(tableDataJson as TableData)
-	);
+interface Column {
+	id: string;
+	ordinalNo: number;
+	title: string;
+	type: string;
+	width?: number;
+}
 
-	const handleOptionChange = (updatedOptions: Option[]) => {
-		const updatedColumns = tableData.columns.map((column) => {
-			const isVisible = updatedOptions.some((option) => option.id === column.id);
-			return { ...column, isVisible };
-		});
+interface DataRow {
+	id: string;
+	[columnId: string]: any;
+}
 
-		setTableData((prevTableData: TableData) => {
-			return { ...prevTableData, columns: updatedColumns };
-		});
+interface TableData {
+	columns: Column[];
+	data: DataRow[];
+}
+
+interface DataTableProps {
+	tableData: TableData;
+}
+
+const DataTableContainer = styled.div`
+	margin-bottom: 20px;
+`;
+
+const VisibleColumnsContainer = styled.div`
+	margin-bottom: 10px;
+`;
+
+const CheckboxLabel = styled.label`
+	margin-left: 5px;
+`;
+
+const Table = styled.table`
+	width: 100%;
+	border-collapse: collapse;
+`;
+
+const TableHead = styled.thead`
+	background-color: #f2f2f2;
+`;
+
+const TableRow = styled.tr`
+	&:nth-child(even) {
+		background-color: #f9f9f9;
+	}
+`;
+
+const TableHeaderCell = styled.th`
+	padding: 8px;
+	border: 1px solid #ddd;
+	min-width: 100px;
+`;
+
+const TableCell = styled.td`
+	padding: 8px;
+	border: 1px solid #ddd;
+	min-width: 100px;
+`;
+
+const DataTable: React.FC<DataTableProps> = ({ tableData }) => {
+	const { columns, data } = tableData;
+	const [visibleColumns, setVisibleColumns] = useState(columns.map((column) => column.id));
+
+	const handleColumnVisibilityChange = (columnId: string) => {
+		if (visibleColumns.includes(columnId)) {
+			// Column is currently visible, so hide it
+			setVisibleColumns(visibleColumns.filter((id) => id !== columnId));
+		} else {
+			// Column is currently hidden, so show it
+			setVisibleColumns([...visibleColumns, columnId]);
+		}
 	};
 
-	const Row: React.FC<ListChildComponentProps> = ({ index, style }) => {
-		const row = tableData.data[index];
+	const Row: React.FC<{ index: number; style: React.CSSProperties }> = ({ index, style }) => {
+		const row = data[index];
 
 		return (
-			<div className="table-row" style={style}>
-				{tableData.columns.map((column) => {
-					const cellValue = row[column.id];
-					return (
-						<div className="table-cell" key={`${row.id}-${column.id}`}>
-							{cellValue.toString()}
-						</div>
-					);
-				})}
-			</div>
+			<TableRow style={style}>
+				{columns.map((column) =>
+					visibleColumns.includes(column.id) ? (
+						<TableCell key={column.id}>
+							{typeof row[column.id] === 'boolean' ? (
+								row[column.id] ? (
+									'Yes'
+								) : (
+									'No'
+								)
+							) : typeof row[column.id] === 'object' ? (
+								// Render selection list or other complex data type
+								// <Select options={row[column.id]} />
+								<div>select component</div>
+							) : (
+								row[column.id]
+							)}
+						</TableCell>
+					) : null
+				)}
+			</TableRow>
 		);
 	};
 
-	const MemoizedRow = React.memo(Row);
-
 	const rowHeight = 30;
 	const tableHeight = rowHeight * tableData.data.length;
-
 	return (
-		<div className="table-container">
-			<div>
-				<MultiSelectDropdown
-					options={tableData.columns}
-					selectedOptions={tableData.columns.filter((column) => column.isVisible)}
-					onChange={handleOptionChange}
-				/>
-			</div>
-			<div style={{ height: tableHeight, width: '100%' }}>
-				<div className="table-header">
-					{tableData.columns.map((column) => (
-						<div
-							className="table-cell"
-							style={{
-								width: column.width ? `${column.width}px` : 'auto',
-								display: column.isVisible ? 'block' : 'none',
-							}}
-							key={column.id}
-						>
-							{column.title}
-						</div>
-					))}
-				</div>
-				<List
-					className="table-list"
-					height={tableHeight}
-					itemCount={tableData.data.length}
-					itemSize={rowHeight}
-					width="100%"
-				>
-					{MemoizedRow}
-				</List>
-			</div>
-		</div>
+		<DataTableContainer>
+			<VisibleColumnsContainer>
+				<label>Visible Columns:</label>
+				{columns.map((column) => (
+					<div key={column.id}>
+						<input
+							type="checkbox"
+							id={column.id}
+							checked={visibleColumns.includes(column.id)}
+							onChange={() => handleColumnVisibilityChange(column.id)}
+						/>
+						<CheckboxLabel htmlFor={column.id}>{column.title}</CheckboxLabel>
+					</div>
+				))}
+			</VisibleColumnsContainer>
+			<Table>
+				<TableHead>
+					<tr>
+						{columns.map((column) =>
+							visibleColumns.includes(column.id) ? (
+								<TableHeaderCell key={column.id}>{column.title}</TableHeaderCell>
+							) : null
+						)}
+					</tr>
+				</TableHead>
+				<tbody>
+					<List
+						style={{ overflow: 'inherit' }}
+						height={tableHeight}
+						itemCount={data.length}
+						itemSize={rowHeight}
+						width="100%"
+					>
+						{Row}
+					</List>
+				</tbody>
+			</Table>
+		</DataTableContainer>
 	);
 };
 
-export default Table;
+export default DataTable;
