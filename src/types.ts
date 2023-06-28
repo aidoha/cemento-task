@@ -4,6 +4,7 @@ export type Column = {
 	title: string;
 	type: 'string' | 'number' | 'boolean' | 'selection';
 	width?: number;
+	isVisible?: boolean;
 };
 
 export type Row = {
