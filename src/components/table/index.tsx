@@ -70,6 +70,7 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 	const { columns, data } = tableData;
 	const [visibleColumns, setVisibleColumns] = useState(columns.map((column) => column.id));
 	const [editingCell, setEditingCell] = useState<{ rowId: string; columnId: string } | null>(null);
+	const [searchQuery, setSearchQuery] = useState('');
 
 	const handleColumnVisibilityChange = (columnId: string) => {
 		if (visibleColumns.includes(columnId)) {
@@ -81,12 +82,28 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 		}
 	};
 
+	const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const { value } = event.target;
+		setSearchQuery(value);
+	};
+
 	const onSave = () => {
 		sessionStorage.setItem('tableData', JSON.stringify(tableData));
 	};
 
+	// search only by string value cells
+	const filteredData = data.filter((row) => {
+		const searchValue = searchQuery.toLowerCase();
+		return Object.values(row).some((value) => {
+			if (typeof value === 'string') {
+				return value.toLowerCase().includes(searchValue);
+			}
+			return false;
+		});
+	});
+
 	const Row: React.FC<{ index: number; style: React.CSSProperties }> = ({ index, style }) => {
-		const row = data[index];
+		const row = filteredData[index];
 
 		const handleCellClick = (rowId: string, columnId: string) => {
 			setEditingCell({ rowId, columnId });
@@ -99,8 +116,6 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 		const handleCellChange = (value: any, rowId: string, columnId: string) => {
 			const isTrueSet = String(value).toLowerCase() === 'true';
 			const isFalseSet = String(value).toLowerCase() === 'false';
-
-			console.log('value', value);
 
 			const updatedValue = isNaN(Number(value))
 				? isTrueSet
@@ -120,15 +135,11 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 				return row;
 			});
 
-			console.log('updatedData', updatedData);
-
 			setTableData((prevTableData: TableData) => ({
 				...prevTableData,
 				data: updatedData,
 			}));
 		};
-
-		// const handleCellSelectChange = () => {};
 
 		return (
 			<TableRow style={style}>
@@ -204,7 +215,7 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 	};
 
 	const rowHeight = 30;
-	const tableHeight = rowHeight * tableData.data.length;
+	const tableHeight = rowHeight * filteredData.length;
 
 	return (
 		<DataTableContainer>
@@ -224,6 +235,10 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 			</VisibleColumnsContainer>
 
 			<button onClick={onSave}>Save</button>
+			<div>
+				<label>Search:</label>
+				<input type="text" value={searchQuery} onChange={handleSearchChange} />
+			</div>
 			<Table>
 				<TableHead>
 					<tr>
@@ -238,7 +253,7 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 					<List
 						style={{ overflow: 'inherit' }}
 						height={tableHeight}
-						itemCount={data.length}
+						itemCount={filteredData.length}
 						itemSize={rowHeight}
 						width="100%"
 					>
