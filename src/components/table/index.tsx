@@ -81,6 +81,10 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 		}
 	};
 
+	const onSave = () => {
+		sessionStorage.setItem('tableData', JSON.stringify(tableData));
+	};
+
 	const Row: React.FC<{ index: number; style: React.CSSProperties }> = ({ index, style }) => {
 		const row = data[index];
 
@@ -89,31 +93,42 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 		};
 
 		const handleCellBlur = () => {
-			setTimeout(() => {
-				setEditingCell(null);
-			}, 100);
+			setEditingCell(null);
 		};
 
-		const handleCellChange = (value: string, rowId: string, columnId: string) => {
-			console.log('event.target.value', editingCell, rowId, columnId);
-			// Update the corresponding cell value in the data array
+		const handleCellChange = (value: any, rowId: string, columnId: string) => {
+			const isTrueSet = String(value).toLowerCase() === 'true';
+			const isFalseSet = String(value).toLowerCase() === 'false';
+
+			console.log('value', value);
+
+			const updatedValue = isNaN(Number(value))
+				? isTrueSet
+					? true
+					: isFalseSet
+					? false
+					: value
+				: Number(value);
+
 			const updatedData = data.map((row) => {
 				if (row.id === rowId) {
 					return {
 						...row,
-						[columnId]: value,
+						[columnId]: updatedValue,
 					};
 				}
 				return row;
 			});
 
-			// Update the data state with the new data array
-			// Replace this line with your actual state update logic
+			console.log('updatedData', updatedData);
+
 			setTableData((prevTableData: TableData) => ({
 				...prevTableData,
 				data: updatedData,
 			}));
 		};
+
+		// const handleCellSelectChange = () => {};
 
 		return (
 			<TableRow style={style}>
@@ -122,13 +137,26 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 						<TableCell key={column.id}>
 							{editingCell?.rowId === row.id && editingCell?.columnId === column.id ? (
 								typeof row[column.id] === 'boolean' ? (
-									row[column.id] ? (
-										'Yes'
-									) : (
-										'No'
-									)
+									<Select
+										options={[true, false]}
+										selected={row[column.id]}
+										editingCell={{
+											rowId: row.id,
+											columnId: column.id,
+										}}
+										onChange={(value) => handleCellChange(value, row.id, column.id)}
+									/>
 								) : typeof row[column.id] === 'object' ? (
-									<Select options={row[column.id]} />
+									<Select
+										options={row[column.id]}
+										selected={row[column.id].find((x: any) => x.selected)}
+										editingCell={{
+											rowId: row.id,
+											columnId: column.id,
+										}}
+										onChange={(value) => handleCellChange(value, row.id, column.id)}
+										isComplex
+									/>
 								) : (
 									<Input
 										value={row[column.id]}
@@ -142,13 +170,30 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 								)
 							) : (
 								<div onClick={() => handleCellClick(row.id, column.id)}>
-									{typeof row[column.id] === 'boolean'
-										? row[column.id]
-											? 'Yes'
-											: 'No'
-										: typeof row[column.id] === 'object'
-										? row[column.id]
-										: row[column.id]}
+									{typeof row[column.id] === 'boolean' ? (
+										<Select
+											options={[true, false]}
+											selected={row[column.id]}
+											editingCell={{
+												rowId: row.id,
+												columnId: column.id,
+											}}
+											onChange={(value) => handleCellChange(value, row.id, column.id)}
+										/>
+									) : typeof row[column.id] === 'object' ? (
+										<Select
+											options={row[column.id]}
+											selected={row[column.id].find((x: any) => x.selected)}
+											editingCell={{
+												rowId: row.id,
+												columnId: column.id,
+											}}
+											onChange={(value) => handleCellChange(value, row.id, column.id)}
+											isComplex
+										/>
+									) : (
+										row[column.id]
+									)}
 								</div>
 							)}
 						</TableCell>
@@ -160,6 +205,7 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 
 	const rowHeight = 30;
 	const tableHeight = rowHeight * tableData.data.length;
+
 	return (
 		<DataTableContainer>
 			<VisibleColumnsContainer>
@@ -176,6 +222,8 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 					</div>
 				))}
 			</VisibleColumnsContainer>
+
+			<button onClick={onSave}>Save</button>
 			<Table>
 				<TableHead>
 					<tr>

@@ -74,8 +74,13 @@
       "column8": "possimus",
       "column9": false,
       "column10": [
-        "option 1",
-        "option 2"
+        {
+          "value": "option 1",
+          "selected": true
+        },
+        {
+          "value": "option 2"
+        }
       ]
     },
     {
