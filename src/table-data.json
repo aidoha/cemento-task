@@ -73,7 +73,10 @@
       "column7": 282,
       "column8": "possimus",
       "column9": false,
-      "column10": false
+      "column10": [
+        "option 1",
+        "option 2"
+      ]
     },
     {
       "id": "row2",

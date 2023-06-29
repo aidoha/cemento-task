@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import styled from 'styled-components';
+import Select from '../select';
 
 interface Column {
 	id: string;
@@ -82,8 +83,8 @@ const DataTable: React.FC<DataTableProps> = ({ tableData }) => {
 
 		return (
 			<TableRow style={style}>
-				{columns.map((column) =>
-					visibleColumns.includes(column.id) ? (
+				{columns.map((column) => {
+					return visibleColumns.includes(column.id) ? (
 						<TableCell key={column.id}>
 							{typeof row[column.id] === 'boolean' ? (
 								row[column.id] ? (
@@ -92,15 +93,13 @@ const DataTable: React.FC<DataTableProps> = ({ tableData }) => {
 									'No'
 								)
 							) : typeof row[column.id] === 'object' ? (
-								// Render selection list or other complex data type
-								// <Select options={row[column.id]} />
-								<div>select component</div>
+								<Select options={row[column.id]} />
 							) : (
 								row[column.id]
 							)}
 						</TableCell>
-					) : null
-				)}
+					) : null;
+				})}
 			</TableRow>
 		);
 	};
