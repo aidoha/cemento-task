@@ -91,14 +91,16 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 		sessionStorage.setItem('tableData', JSON.stringify(tableData));
 	};
 
-	// search only by string value cells
 	const filteredData = data.filter((row) => {
 		const searchValue = searchQuery.toLowerCase();
 		return Object.values(row).some((value) => {
-			if (typeof value === 'string') {
-				return value.toLowerCase().includes(searchValue);
+			if (typeof value === 'boolean') {
+				return value.toString().toLowerCase() === searchValue;
 			}
-			return false;
+			if (typeof value === 'object' && value !== null) {
+				return value.some((option: any) => option.value.toLowerCase().includes(searchValue));
+			}
+			return value.toString().toLowerCase().includes(searchValue);
 		});
 	});
 

@@ -94,7 +94,15 @@
       "column7": 825,
       "column8": "odit",
       "column9": true,
-      "column10": true
+      "column10": [
+        {
+          "value": "ket 1",
+          "selected": true
+        },
+        {
+          "value": "ket 2"
+        }
+      ]
     },
     {
       "id": "row3",
