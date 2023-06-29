@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import Table from './components/table';
-import tableData from './table-data.json';
+import tableDataJson from './table-data.json';
 
 function App() {
+	const [tableData, setTableData] = useState(tableDataJson);
 	return (
 		<div>
-			<Table tableData={tableData} />
+			<Table tableData={tableData} setTableData={setTableData} />
 		</div>
 	);
 }

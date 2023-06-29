@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import styled from 'styled-components';
 import Select from '../select';
+import Input from '../input';
 
 interface Column {
 	id: string;
@@ -23,6 +24,7 @@ interface TableData {
 
 interface DataTableProps {
 	tableData: TableData;
+	setTableData: (newState: any) => void;
 }
 
 const DataTableContainer = styled.div`
@@ -55,18 +57,19 @@ const TableRow = styled.tr`
 const TableHeaderCell = styled.th`
 	padding: 8px;
 	border: 1px solid #ddd;
-	min-width: 100px;
+	min-width: 80px;
 `;
 
 const TableCell = styled.td`
 	padding: 8px;
 	border: 1px solid #ddd;
-	min-width: 100px;
+	min-width: 80px;
 `;
 
-const DataTable: React.FC<DataTableProps> = ({ tableData }) => {
+const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 	const { columns, data } = tableData;
 	const [visibleColumns, setVisibleColumns] = useState(columns.map((column) => column.id));
+	const [editingCell, setEditingCell] = useState<{ rowId: string; columnId: string } | null>(null);
 
 	const handleColumnVisibilityChange = (columnId: string) => {
 		if (visibleColumns.includes(columnId)) {
@@ -81,21 +84,72 @@ const DataTable: React.FC<DataTableProps> = ({ tableData }) => {
 	const Row: React.FC<{ index: number; style: React.CSSProperties }> = ({ index, style }) => {
 		const row = data[index];
 
+		const handleCellClick = (rowId: string, columnId: string) => {
+			setEditingCell({ rowId, columnId });
+		};
+
+		const handleCellBlur = () => {
+			setTimeout(() => {
+				setEditingCell(null);
+			}, 100);
+		};
+
+		const handleCellChange = (value: string, rowId: string, columnId: string) => {
+			console.log('event.target.value', editingCell, rowId, columnId);
+			// Update the corresponding cell value in the data array
+			const updatedData = data.map((row) => {
+				if (row.id === rowId) {
+					return {
+						...row,
+						[columnId]: value,
+					};
+				}
+				return row;
+			});
+
+			// Update the data state with the new data array
+			// Replace this line with your actual state update logic
+			setTableData((prevTableData: TableData) => ({
+				...prevTableData,
+				data: updatedData,
+			}));
+		};
+
 		return (
 			<TableRow style={style}>
 				{columns.map((column) => {
 					return visibleColumns.includes(column.id) ? (
 						<TableCell key={column.id}>
-							{typeof row[column.id] === 'boolean' ? (
-								row[column.id] ? (
-									'Yes'
+							{editingCell?.rowId === row.id && editingCell?.columnId === column.id ? (
+								typeof row[column.id] === 'boolean' ? (
+									row[column.id] ? (
+										'Yes'
+									) : (
+										'No'
+									)
+								) : typeof row[column.id] === 'object' ? (
+									<Select options={row[column.id]} />
 								) : (
-									'No'
+									<Input
+										value={row[column.id]}
+										editingCell={{
+											rowId: row.id,
+											columnId: column.id,
+										}}
+										onChange={(value) => handleCellChange(value, row.id, column.id)}
+										onBlur={handleCellBlur}
+									/>
 								)
-							) : typeof row[column.id] === 'object' ? (
-								<Select options={row[column.id]} />
 							) : (
-								row[column.id]
+								<div onClick={() => handleCellClick(row.id, column.id)}>
+									{typeof row[column.id] === 'boolean'
+										? row[column.id]
+											? 'Yes'
+											: 'No'
+										: typeof row[column.id] === 'object'
+										? row[column.id]
+										: row[column.id]}
+								</div>
 							)}
 						</TableCell>
 					) : null;
