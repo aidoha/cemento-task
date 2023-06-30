@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
+import Checkbox from '../checkbox';
+import { DropdownContainer, DropdownToggle, DropdownMenu, OptionLabel } from './styled';
 
 export type Option = {
 	id: string;
@@ -11,33 +12,6 @@ type MultiSelectDropdownProps = {
 	selectedOptions: string[];
 	onChange: (id: string) => void;
 };
-
-const DropdownContainer = styled.div`
-	position: relative;
-	display: inline-block;
-`;
-
-const DropdownToggle = styled.button`
-	background-color: #f0f0f0;
-	border: none;
-	padding: 8px;
-	cursor: pointer;
-`;
-
-const DropdownMenu = styled.div`
-	position: absolute;
-	top: 100%;
-	left: 0;
-	z-index: 1;
-	background-color: #ffffff;
-	border: 1px solid #ccc;
-	padding: 8px;
-`;
-
-const OptionLabel = styled.label`
-	display: block;
-	margin-bottom: 4px;
-`;
 
 const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 	options,
@@ -52,17 +26,19 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 
 	return (
 		<DropdownContainer>
-			<DropdownToggle onClick={handleToggleDropdown}>Display</DropdownToggle>
+			<DropdownToggle isOpen={isOpen} onClick={handleToggleDropdown}>
+				<div>Display</div>
+				<div>{isOpen ? <>&#8593;</> : <>&#8595;</>}</div>
+			</DropdownToggle>
 			{isOpen && (
 				<DropdownMenu>
 					{options.map((option) => (
 						<OptionLabel key={option.id}>
-							<input
-								type="checkbox"
+							<Checkbox
 								checked={selectedOptions.includes(option.id)}
 								onChange={() => onChange(option.id)}
+								label={option.title}
 							/>
-							{option.title}
 						</OptionLabel>
 					))}
 				</DropdownMenu>
