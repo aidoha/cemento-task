@@ -8,8 +8,8 @@ export type Option = {
 
 type MultiSelectDropdownProps = {
 	options: Option[];
-	selectedOptions: Option[];
-	onChange: (selectedOptions: Option[]) => void;
+	selectedOptions: string[];
+	onChange: (id: string) => void;
 };
 
 const DropdownContainer = styled.div`
@@ -50,13 +50,6 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 		setIsOpen(!isOpen);
 	};
 
-	const handleOptionChange = (option: Option) => {
-		const updatedOptions = selectedOptions.includes(option)
-			? selectedOptions.filter((o) => o.id !== option.id)
-			: [...selectedOptions, option];
-		onChange(updatedOptions);
-	};
-
 	return (
 		<DropdownContainer>
 			<DropdownToggle onClick={handleToggleDropdown}>Display</DropdownToggle>
@@ -66,8 +59,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 						<OptionLabel key={option.id}>
 							<input
 								type="checkbox"
-								checked={selectedOptions.includes(option)}
-								onChange={() => handleOptionChange(option)}
+								checked={selectedOptions.includes(option.id)}
+								onChange={() => onChange(option.id)}
 							/>
 							{option.title}
 						</OptionLabel>

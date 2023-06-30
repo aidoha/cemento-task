@@ -4,18 +4,9 @@ export const DataTableContainer = styled.div`
 	margin-bottom: 20px;
 `;
 
-export const VisibleColumnsContainer = styled.div`
-	margin-bottom: 10px;
-`;
-
-export const CheckboxLabel = styled.label`
-	margin-left: 5px;
-`;
-
 export const Table = styled.table`
 	width: 100%;
 	border-collapse: collapse;
-	table-layout: fixed;
 `;
 
 export const TableHead = styled.thead`
@@ -28,12 +19,14 @@ export const TableRow = styled.tr`
 	}
 `;
 
-export const TableHeaderCell = styled.th``;
+export const TableHeaderCell = styled.th`
+	padding: 8px;
+	border: 1px solid #ddd;
+	min-width: 80px;
+`;
 
 export const TableCell = styled.td`
-	padding: 10px;
+	padding: 8px;
 	border: 1px solid #ddd;
-	text-align: left;
-	flex: 1;
-	min-width: 100px;
+	min-width: 80px;
 `;

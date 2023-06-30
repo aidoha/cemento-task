@@ -1,70 +1,17 @@
 import React, { useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
-import styled from 'styled-components';
 import Select from '../select';
 import Input from '../input';
-
-interface Column {
-	id: string;
-	ordinalNo: number;
-	title: string;
-	type: string;
-	width?: number;
-}
-
-interface DataRow {
-	id: string;
-	[columnId: string]: any;
-}
-
-interface TableData {
-	columns: Column[];
-	data: DataRow[];
-}
-
-interface DataTableProps {
-	tableData: TableData;
-	setTableData: (newState: any) => void;
-}
-
-const DataTableContainer = styled.div`
-	margin-bottom: 20px;
-`;
-
-const VisibleColumnsContainer = styled.div`
-	margin-bottom: 10px;
-`;
-
-const CheckboxLabel = styled.label`
-	margin-left: 5px;
-`;
-
-const Table = styled.table`
-	width: 100%;
-	border-collapse: collapse;
-`;
-
-const TableHead = styled.thead`
-	background-color: #f2f2f2;
-`;
-
-const TableRow = styled.tr`
-	&:nth-child(even) {
-		background-color: #f9f9f9;
-	}
-`;
-
-const TableHeaderCell = styled.th`
-	padding: 8px;
-	border: 1px solid #ddd;
-	min-width: 80px;
-`;
-
-const TableCell = styled.td`
-	padding: 8px;
-	border: 1px solid #ddd;
-	min-width: 80px;
-`;
+import MultiSelectDropdown from '../dropdown';
+import {
+	DataTableContainer,
+	Table,
+	TableHead,
+	TableRow,
+	TableHeaderCell,
+	TableCell,
+} from './styled';
+import { Column, DataRow, TableData, DataTableProps } from './types';
 
 const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 	const { columns, data } = tableData;
@@ -221,20 +168,11 @@ const DataTable: React.FC<DataTableProps> = ({ tableData, setTableData }) => {
 
 	return (
 		<DataTableContainer>
-			<VisibleColumnsContainer>
-				<label>Visible Columns:</label>
-				{columns.map((column) => (
-					<div key={column.id}>
-						<input
-							type="checkbox"
-							id={column.id}
-							checked={visibleColumns.includes(column.id)}
-							onChange={() => handleColumnVisibilityChange(column.id)}
-						/>
-						<CheckboxLabel htmlFor={column.id}>{column.title}</CheckboxLabel>
-					</div>
-				))}
-			</VisibleColumnsContainer>
+			<MultiSelectDropdown
+				options={columns}
+				selectedOptions={visibleColumns}
+				onChange={handleColumnVisibilityChange}
+			/>
 
 			<button onClick={onSave}>Save</button>
 			<div>
